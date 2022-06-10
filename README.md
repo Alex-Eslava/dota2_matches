@@ -1,7 +1,13 @@
 dota2_matches
 ==============================
 
-This is written by ME
+Why use IRIS dataset when you can toy around with data from your favourite videogame?
+
+This project is born out of personal curiosity only and any output should not be taken too seriously from it
+
+
+
+Will try to update this Readme more than on these early commits :) 
 
 Project Organization
 ------------
