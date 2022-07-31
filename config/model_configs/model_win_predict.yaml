@@ -1,0 +1,24 @@
+model_name: default_win_predict_classifier
+model_type: LogisticRegression
+
+
+
+target_column_name: None
+
+cols_to_keep:
+  -'gold_spent
+  -'gold_per_min'
+  -'xp_per_min'
+  -'kills'
+  -'deaths'
+  -'tower_damage'
+  -'hero_damage'
+
+  # Param search
+param_tuning_config:
+  n_jobs: -1
+  cv: 5
+  scoring: balanced_accuracy
+
+param_tuning_grid:
+  penalty: ['l1','l2']

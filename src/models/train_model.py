@@ -1,7 +1,19 @@
 
 import numpy as np
+import pandas as pd
+
+import argparse
+import pickle
+import sys
+import time
+import yaml
+
+
+from datetime import datetime
+from pathlib import Path
 from sklearn.model_selection import GridSearchCV
 from catboost import CatBoostClassifier
+
 
 from dota2_matches.lib_d2c import utils
 
@@ -40,12 +52,12 @@ def grid_search(model_config, train_data):
         early_stopping_rounds=42
     )
 
-    return grid_cv_fitted.best_params_
+    return grid_cv_fitted, grid_cv_fitted.best_params_
 
 def get_model_with_config(model_config, train_data):
     params = {}
 
-    if model_config['type']=='catboost':
+    if model_config['type'].lower()=='catboost':
         categorical_features_indices = np.where(train_data.dtypes != float)[0]
         if model_config['free_text_cols']:
             text_features_indices = np.where(train_data.columns in model_config['free_text_cols'])[0]
@@ -54,7 +66,49 @@ def get_model_with_config(model_config, train_data):
             'NaiveBayes+Word|BoW+Word,BiGram|BM25+Word'
         ]
         model = CatBoostClassifier(**params, cat_features=categorical_features_indices)
+    elif model_config['type'].lower()=='logisticregression':
+        # Simple model to test out the waters 
+        try:
+            from sklearn.linear_model import LogisticRegressionCV
+        except ModuleNotFoundError as e:
+            print("My man get your pip updated")
+        model = LogisticRegressionCV()
     else:
-        print("errroooor, throw exception here lad")    
+        print("unsupported, we're working on it")    
 
     return model
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='Process some integers.')
+
+    parser.add_argument('--train-best-model', action='store_true', default=False)
+    parser.add_argument('--test-best-model', action='store_true', default=False)
+    parser.add_argument('--grid-search', action='store_true', default=False)
+
+    args = parser.parse_args()
+
+    start_time = time.time()
+    config_file = "config/model_configs/model_win_predict.yaml"
+
+    model_config = yaml.safe_load(open(config_file))
+
+    print("Reading data")
+    raw_data_path = "data/interim/merged_data.csv"
+    base_data = 
+
+    if args.grid_search:
+        print("Grid search on model parameters")
+        model, grid_search_metrics = grid_search(model_config, base_data)
+
+    if args.test_best_model:
+        print("Testing best model")
+        test_set_metrics = test_best_model(model_config, base_data)
+        print(test_set_metrics)
+
+    if args.train_best_model:
+        print("Training best model")
+        m = train_best_model("models", model_config, base_data)
+        print("Model saved!")
+
+    print("--- %s seconds ---" % (time.time() - start_time))

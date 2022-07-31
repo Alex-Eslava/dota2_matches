@@ -4,16 +4,17 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
+from catboost import CatBoostClassifier
 
 from dota2_matches.src.features import build_features as bf
+from dota2_matches.src.models import train_model as tm
 
 PROJECT_DIR = Path(__file__).resolve().parents[3]
 
 sys.path.append(str(PROJECT_DIR))
 
 LOAD_FROM_LOCAL = True
-OUTLIERS_MODEL_PATH = 'models/outliers_default_202203231033'  # 'models/outliers_default_202203221119'
-CATBOOST_MODEL_PATH = 'models/catboost_default_202203221159'
+CATBOOST_MODEL_PATH = 'models/catboost_classifier_tmp'
 
 
 
@@ -45,21 +46,13 @@ if __name__ == "__main__":
         new_df = matches)
 
     # Store this <--- tbd
-
     x_train, x_test, y_train,y_test = split_scale(matches, 'radiant_win')
 
     # 3. Predict
     model = CatboostClassifier.from_local(CATBOOST_MODEL_PATH)
+    model, a = tm.grid_search(model_config, base_data)
 
     print('Forecasting...')
     pred = model.predict(to_predict)
     pred = pred.reset_index()
-    df_ai_out = pred
-    df_ai_out.columns = ['report_id', 'approval_status']
-    df_ai_out['type'] = 'ai'
-
-
-    # 7. Prepare output
-    out = df_ai_out
-
-    print(out)
+    print(pred)
