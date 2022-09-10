@@ -1,22 +1,17 @@
 
 import numpy as np
 import pandas as pd
-
 import argparse
 import pickle
 import sys
 import time
 import yaml
 
-
 from datetime import datetime
 from pathlib import Path
 from sklearn.model_selection import GridSearchCV
 from catboost import CatBoostClassifier
-
-
 from dota2_matches.lib_d2c import utils
-
 
 
 def grid_search(model_config, train_data):
@@ -82,9 +77,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Process some integers.')
 
-    parser.add_argument('--train-best-model', action='store_true', default=False)
-    parser.add_argument('--test-best-model', action='store_true', default=False)
-    parser.add_argument('--grid-search', action='store_true', default=False)
+    parser.add_argument('--train', action='store_true', default=False)
+    parser.add_argument('--test', action='store_true', default=False)
+    parser.add_argument('--gridsearch', action='store_true', default=False)
 
     args = parser.parse_args()
 
@@ -97,18 +92,18 @@ if __name__ == "__main__":
     raw_data_path = "data/interim/merged_data.csv"
     base_data = 
 
-    if args.grid_search:
+    if args.gridsearch:
         print("Grid search on model parameters")
         model, grid_search_metrics = grid_search(model_config, base_data)
 
-    if args.test_best_model:
-        print("Testing best model")
-        test_set_metrics = test_best_model(model_config, base_data)
-        print(test_set_metrics)
+    if args.test:
+        print(f"Testing model {model_config['model_name']}")
+        test_metrics = test_model(model_config, base_data)
+        print(test_metrics)
 
-    if args.train_best_model:
-        print("Training best model")
-        m = train_best_model("models", model_config, base_data)
+    if args.train:
+        print(f"Training model {model_config['model_name']}")
+        m = train_model("models", model_config, base_data)
         print("Model saved!")
 
     print("--- %s seconds ---" % (time.time() - start_time))
